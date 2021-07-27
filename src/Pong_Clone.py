@@ -210,13 +210,31 @@ def weakerPaddleBSwing():
 # In[11]:
 
 
+#Allows the AIs to randomize their swing strength in advanced mode
+def randomizePaddleSwingStrength(paddle):
+    strength = random.randint(0, 1)
+    if (strength == 1):
+        if (paddle == 'A'):
+            strongerPaddleASwing()
+        else:
+            strongerPaddleBSwing()
+    else:
+        if (paddle == 'A'):
+            weakerPaddleASwing()
+        else:
+            weakerPaddleBSwing()
+
+
+# In[12]:
+
+
 #Determines Ball Movement Speed
 def setBallSpeed(speed):
     ball.dx = speed #Movement on x-axis
     ball.dy = speed #Movement on y-axis
 
 
-# In[12]:
+# In[13]:
 
 
 #Limits the Ball Movement Speed to Resonable Levels
@@ -249,7 +267,7 @@ def limitBallSpeed(bl):
         bl.dy = 0.5
 
 
-# In[13]:
+# In[14]:
 
 
 #Makes the ball move
@@ -258,14 +276,14 @@ def moveBall(bl):
     bl.sety(bl.ycor() + bl.dy)
 
 
-# In[14]:
+# In[15]:
 
 
 def randomizeBallServe(bl):
     bl.dy *= random.uniform(-1, 1)
 
 
-# In[15]:
+# In[16]:
 
 
 def playSound(soundFile):
@@ -273,8 +291,7 @@ def playSound(soundFile):
     systemType = platform.system()
     
     if (systemType == 'Linux' or systemType == 'Linux2'): # Linux
-        #os.system('aplay ' + sound) # aplay made for wav files, not mp3
-        os.system('mpg123 ' + sound) # Use mpg123 for mp3 files
+        os.system('aplay ' + sound)
         
     elif (systemType == 'Darwin'): # Mac OS X
         os.system('afplay ' + sound)
@@ -284,11 +301,12 @@ def playSound(soundFile):
         print('Currently non functional.')
 
 
-# In[16]:
+# In[17]:
 
 
 #Screen Border Checking
 def borderChecking(bl):
+    global ballHit
     global score1
     global score2 
     
@@ -318,7 +336,13 @@ def borderChecking(bl):
         playSound('AirPlaneDing.mp3')
         
         bl.goto(0, 0)
-        #randomizeBallServe(bl)
+        randomizeBallServe(bl)
+        
+        if (ballHit == 1):
+            ballHit = 0
+            
+        else:
+            ballHit = 1
         
         sb.clear()
         sb.write('Player {}: {}  Player {}: {}'.format(setScoreNames()[0], score1, setScoreNames()[1], score2), 
@@ -327,7 +351,7 @@ def borderChecking(bl):
     limitBallSpeed(bl)
 
 
-# In[17]:
+# In[18]:
 
 
 #Determines Paddle & Ball Collisions
@@ -368,7 +392,7 @@ def paddleBallCollision(bl, bH, pA, pAS, pB, pBS):
     limitBallSpeed(bl)
 
 
-# In[18]:
+# In[19]:
 
 
 #Prevents the Ball from glitching through a paddle moving towards it
@@ -389,7 +413,7 @@ def paddleBallMoveCollision(bl, pA, pB):
         bl.setx(xCorPA + 60)
 
 
-# In[19]:
+# In[20]:
 
 
 #Adjust the angle of the ball's trajectory depending on where it struck along the paddle's length
@@ -406,9 +430,10 @@ def resultingCollisionAngle(bl, bYCor, pYCor):
     #    bl.dy *= 0 
 
 
-# In[20]:
+# In[21]:
 
 
+#Allows players to temporarily pause the game
 def pauseGame():
     global pause
     global pauseMessage
@@ -421,7 +446,7 @@ def pauseGame():
         pauseMessage = genText(0, 'white', 0, 0, '  Game  Paused', 'center', ('Courier', 24, 'normal'))
 
 
-# In[21]:
+# In[22]:
 
 
 #Allows players to end and quit the game without errors
@@ -430,7 +455,7 @@ def exitGame():
     running = False
 
 
-# In[22]:
+# In[23]:
 
 
 #Creates a Very Simple Player 0 AI
@@ -451,11 +476,7 @@ def simpleOpponentAI(bl, bH, pB, pA, nP, gM):
         paddleBDown()
     
     if (gM == 1):
-        strength = random.randint(0, 1)
-        if (strength == 1):
-            strongerPaddleBSwing()
-        else:
-            weakerPaddleBSwing()
+        randomizePaddleSwingStrength('B')
     
         if (xCorBall > 0 and xCorBall < xCorPB - 10 and xCorPB - xCorBall <= 75 and bH == 0):
             pass
@@ -474,11 +495,7 @@ def simpleOpponentAI(bl, bH, pB, pA, nP, gM):
             paddleADown()
         
         if (gM == 1):
-            strength = random.randint(0, 1)
-            if (strength == 1):
-                strongerPaddleASwing()
-            else:
-                weakerPaddleASwing()
+            randomizePaddleSwingStrength('A')
             
             if (xCorBall < 0 and xCorBall > xCorPA + 10 and abs(xCorPA - xCorBall) <= 75 and bH == 1):
                 pass
@@ -490,7 +507,7 @@ def simpleOpponentAI(bl, bH, pB, pA, nP, gM):
                 paddleALeft()
 
 
-# In[23]:
+# In[24]:
 
 
 #Accurately predict's the ball's path; currently only functions for classic mode
@@ -548,7 +565,7 @@ def predictBallMovement(bl):
                 ballScoreYCor = -290 + (wholeRatiosAfterLastBounce * 290) + abs(timeLeft * dyBall)
 
 
-# In[24]:
+# In[25]:
 
 
 #Control's the AI Paddles
@@ -598,7 +615,7 @@ def predictiveOpponentAI(bl, bH, pA, pB, nP):
                 paddleADown()
 
 
-# In[25]:
+# In[26]:
 
 
 #Initiates the game environment
@@ -615,7 +632,7 @@ ballScoreXCor = 0
 ballScoreYCor = 0
 
 
-# In[26]:
+# In[27]:
 
 
 #Main Menu
@@ -645,7 +662,7 @@ modeAI = gameWindow.numinput('AIModeSelection', 'Which AI Mode: Simple or Predic
 typeAI.clear()
 
 
-# In[27]:
+# In[28]:
 
 
 #Sets up the game environment    
@@ -701,7 +718,7 @@ exitInstructions = genText(0, 'white', 0, -280, 'To pause the game press: "p"  '
                            'right', ('Courier', 10, 'normal'))
 
 
-# In[28]:
+# In[29]:
 
 
 def playerControlsSwitch(nP, gM):
@@ -730,7 +747,7 @@ def playerControlsSwitch(nP, gM):
             gameWindow.onkeypress(weakerPaddleASwing, 'l')
 
 
-# In[29]:
+# In[30]:
 
 
 #Keyboard Binding
@@ -743,7 +760,7 @@ gameWindow.onkeypress(pauseGame, 'p')
 gameWindow.onkeypress(exitGame, 'q')
 
 
-# In[ ]:
+# In[31]:
 
 
 #Main Game Loop
@@ -771,20 +788,8 @@ while (running):
     gameWindow.update()
 
 
-# In[ ]:
+# In[32]:
 
 
 turtle.done()
-
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
-
-
-
 
